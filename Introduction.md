@@ -879,3 +879,163 @@ Virtual machines represent the logical extension of the kernel/user mode protect
 
 ## 15. Transition
 This completes **all of Introduction**. Next major section: **Process Management** — starting with **Process concept & states**. Say **"next"** to continue..
+
+
+# Topic 1: Operating System — All Interview Questions with Answers (Complete)
+
+## OS Definition
+
+**Q1: Define an Operating System. What are its main functions?**
+**A:** An OS is a system software that acts as an intermediary between hardware and user programs, managing hardware resources and providing a convenient, secure environment for program execution. Main functions: process management, memory management, file management, device management, and security/protection.
+
+**Q2: Differentiate between kernel mode and user mode.**
+**A:** Kernel mode is a privileged CPU state where code has unrestricted hardware/memory access (used by the OS core). User mode is restricted — programs can only run a limited instruction set and must request hardware access via system calls. This separation is enforced by CPU hardware (mode bit), not just software.
+
+**Q3: What is a system call? Give an example.**
+**A:** A system call is a controlled interface for a user-mode program to request a kernel service. Example: `open("file.txt")` triggers a trap that switches to kernel mode, where the OS validates permissions and opens the file before returning control.
+
+**Q4: Is BIOS an operating system? Why or why not?**
+**A:** No. BIOS/UEFI is firmware that runs first at power-on, performs hardware self-tests (POST), and loads the bootloader. It doesn't manage running processes or provide ongoing OS services — it hands off control and steps aside.
+
+---
+
+## OS Functions & Goals
+
+**Q1: What are the main functions of an operating system?**
+**A:** Process management, memory management, file management, device management, security/protection, and providing a user interface (CLI/GUI).
+
+**Q2: What are the primary goals of an OS? Explain with examples.**
+**A:** Convenience (easy to use — e.g., file system hides raw disk sectors), Efficiency (optimal resource use — e.g., CPU scheduling keeps hardware busy), and Ability to Evolve (support new hardware/features without redesign — e.g., Linux's modular driver system).
+
+**Q3: How do OS goals sometimes conflict with each other?**
+**A:** More security checks reduce efficiency (added overhead per operation); maximizing convenience (extra abstraction layers) can also slow performance. Design is a constant tradeoff between these goals.
+
+**Q4: Why does a real-time OS prioritize differently than a general-purpose OS?**
+**A:** A general-purpose OS optimizes for average throughput and fairness across many users/programs. A real-time OS prioritizes **predictability** — guaranteeing a task completes within a fixed deadline — even if that means sacrificing average-case efficiency.
+
+---
+
+## Types of OS
+
+**Q1: Differentiate between batch and time-sharing OS.**
+**A:** Batch OS executes jobs in groups with no user interaction during execution (e.g., overnight billing runs). Time-sharing OS rapidly switches the CPU among multiple users/processes so each feels they have dedicated, interactive access (e.g., a shared Linux server with multiple SSH users).
+
+**Q2: What is the key difference between hard and soft real-time systems?**
+**A:** Hard real-time: missing a deadline is catastrophic/unacceptable (e.g., pacemaker, airbag system). Soft real-time: missing a deadline causes degraded quality but not failure (e.g., video streaming glitch).
+
+**Q3: How does a distributed OS differ from a network OS?**
+**A:** A distributed OS manages multiple networked machines so they **appear as a single unified system** to the user (transparent resource sharing). A network OS just connects machines and lets users access remote resources explicitly (e.g., mapping a network drive) — each machine still behaves independently.
+
+**Q4: Give one real-world example each for embedded, real-time, and time-sharing OS.**
+**A:** Embedded: washing machine controller chip. Real-time: car airbag deployment system. Time-sharing: a university Linux server accessed by many students via SSH.
+
+---
+
+## OS Structure
+
+**Q1: Differentiate between monolithic and microkernel architecture.**
+**A:** Monolithic: all OS services (file system, drivers, scheduler) run together in kernel space — fast (direct function calls) but a single bug can crash the whole system. Microkernel: only minimal services (IPC, basic scheduling) run in kernel; everything else runs as isolated user-space processes — safer but slower due to message-passing overhead.
+
+**Q2: Why is Linux called a modular monolithic kernel, not a microkernel?**
+**A:** Linux keeps core services (memory, process management, scheduling) in kernel space like a monolithic kernel, but allows drivers/features to be added or removed at runtime as **loadable kernel modules** — without true user-space isolation, which is what would define it as a microkernel.
+
+**Q3: What are the advantages of a layered OS structure?**
+**A:** Easier to design, debug, and maintain — each layer only interacts with the layer directly below it, so changes are localized and errors are easier to trace to a specific layer.
+
+**Q4: Give an example of a hybrid kernel and explain why it's hybrid.**
+**A:** macOS's XNU kernel combines the Mach microkernel (for IPC, scheduling) with BSD monolithic-style components (for networking, file systems) — blending isolation benefits with monolithic performance.
+
+---
+
+## System Calls
+
+**Q1: What is a system call? How does it differ from a normal function call?**
+**A:** A system call is a request from a user-mode program to the kernel for a privileged service (e.g., `read()`, `fork()`). Unlike a normal function call (which stays in user mode), a system call triggers a mode switch to kernel mode via a trap instruction — much more expensive in CPU cycles.
+
+**Q2: Explain the sequence of steps when a system call is made.**
+**A:** Program calls a library function → library issues a trap/software interrupt → CPU switches to kernel mode → kernel looks up the system call number in the system call table → executes the matching kernel function → returns result and switches back to user mode.
+
+**Q3: Give examples of system calls under each category.**
+**A:** Process control: `fork()`, `exec()`, `exit()`. File management: `open()`, `read()`, `write()`. Device management: `ioctl()`. Communication: `pipe()`, `socket()`.
+
+**Q4: What is the role of the system call table?**
+**A:** It's a lookup array in the kernel mapping each system call number to its corresponding kernel function address, allowing the kernel to quickly find and execute the correct service when a trap occurs.
+
+**Q5: Why can't Windows executables run natively on Linux, from a system call perspective?**
+**A:** Windows and Linux have completely different system call numbers, calling conventions, and kernel interfaces (different ABIs). A Windows `.exe` makes system calls Linux's kernel doesn't recognize, so it can't run natively without a compatibility layer (like Wine).
+
+---
+
+## Kernel Mode & User Mode
+
+**Q1: What is the difference between kernel mode and user mode?**
+**A:** Kernel mode allows unrestricted execution of any CPU instruction and full hardware/memory access. User mode restricts programs to a limited instruction set with no direct hardware access — they must go through system calls.
+
+**Q2: Is the mode bit a hardware or software feature? Explain.**
+**A:** Hardware. It's a bit stored in a special CPU register (e.g., x86 protection rings). The CPU itself refuses to execute privileged instructions when the bit indicates user mode — software cannot bypass this through coding tricks.
+
+**Q3: Why does a root/admin user still operate in user mode?**
+**A:** Root has fewer *permission restrictions* within user mode (can install software, modify system files) but still cannot directly execute privileged CPU instructions — root-owned programs still must go through system calls like any other user-mode program.
+
+**Q4: What happens when a program tries to execute a privileged instruction in user mode?**
+**A:** The CPU blocks it and raises a trap/exception (e.g., a protection fault), and the kernel typically terminates the offending program rather than allowing the instruction to execute.
+
+**Q5: Explain the role of mode bit in preventing system crashes.**
+**A:** By restricting user-mode programs from directly touching hardware or arbitrary memory, the mode bit ensures a buggy or malicious program can only corrupt its own memory space — it can't bring down the entire system, since only kernel-mode code has that level of access.
+
+---
+
+## Interrupts & Traps
+
+**Q1: Differentiate between an interrupt and a trap.**
+**A:** An interrupt is triggered by external hardware (e.g., keyboard press, timer) and is asynchronous. A trap is triggered internally by the currently executing program itself (e.g., a system call or a divide-by-zero error) and is synchronous.
+
+**Q2: What is the Interrupt Vector Table, and what is its role?**
+**A:** It's an array in memory mapping each interrupt/trap number to the address of its corresponding handler function (ISR). When an interrupt or trap occurs, the CPU uses this table to quickly find and jump to the correct handler.
+
+**Q3: Why is the timer interrupt critical for multitasking?**
+**A:** It's the mechanism that forces the CPU to periodically return control to the OS scheduler, even if a running process never voluntarily yields — without it, a process could hog the CPU forever, making preemptive multitasking impossible.
+
+**Q4: What is a maskable vs non-maskable interrupt?**
+**A:** Maskable interrupts can be temporarily disabled/ignored by the OS during critical operations. Non-maskable interrupts (NMI) cannot be ignored and are reserved for critical events like hardware failures.
+
+**Q5: How does a page fault relate to the concept of a trap?**
+**A:** A page fault is a type of trap generated when a program accesses memory not currently loaded in RAM. Unlike an error-causing exception, it's often handled transparently — the OS loads the needed page from disk and resumes the program normally (covered in depth under Virtual Memory).
+
+---
+
+## Bootstrapping
+
+**Q1: Explain the steps involved in the boot process of a computer.**
+**A:** Power on → firmware (BIOS/UEFI) runs POST (hardware self-test) → firmware loads the bootloader (e.g., GRUB) → bootloader loads the kernel into RAM → kernel initializes hardware/drivers and mounts the root filesystem → kernel starts the init process (systemd) → init starts background services → login/GUI ready.
+
+**Q2: Differentiate between BIOS and UEFI.**
+**A:** BIOS is older firmware that reads a fixed 512-byte MBR to find the bootloader. UEFI is modern firmware using a dedicated EFI System Partition, supporting larger bootloaders, faster boot, GPT partitioning, and Secure Boot.
+
+**Q3: What is the role of a bootloader like GRUB?**
+**A:** It's loaded by firmware and is responsible for locating and loading the actual OS kernel into RAM, and for offering a boot menu when multiple OSes are installed (dual-boot).
+
+**Q4: What is initramfs, and why is it needed?**
+**A:** A temporary, minimal filesystem loaded into RAM by the bootloader alongside the kernel. It's needed because the kernel may require specific drivers to access the real root filesystem on disk — those drivers must be available *before* the real filesystem can be mounted, so they're bundled here temporarily.
+
+**Q5: What is Secure Boot and what problem does it solve?**
+**A:** A UEFI feature that cryptographically verifies the bootloader and kernel signatures before loading them, preventing boot-level malware (bootkits/rootkits) from hijacking the boot chain.
+
+---
+
+## Virtual Machines
+
+**Q1: What is a hypervisor? Differentiate Type 1 and Type 2.**
+**A:** A hypervisor is software that creates and manages VMs by controlling their access to physical hardware. Type 1 (bare-metal) runs directly on hardware with no host OS (e.g., VMware ESXi, KVM) — faster, used in data centers. Type 2 (hosted) runs on top of a normal host OS (e.g., VirtualBox) — easier to use, but slower due to the extra layer.
+
+**Q2: Explain the trap-and-emulate mechanism in virtualization.**
+**A:** When a guest OS tries to execute a privileged instruction, the hypervisor traps it (similar to how the kernel traps user-mode attempts), safely emulates the intended effect, then returns control — the guest OS behaves as if it has direct hardware access, but it doesn't.
+
+**Q3: How does virtualization differ from containerization?**
+**A:** A VM virtualizes entire hardware and runs its own separate OS kernel, giving strong isolation but heavier resource use. A container shares the host's kernel and only isolates processes/filesystem — much lighter weight, but with a thinner isolation boundary.
+
+**Q4: What is hardware-assisted virtualization, and why does it matter?**
+**A:** CPU features (Intel VT-x, AMD-V) that provide built-in support for trap-and-emulate operations, drastically reducing virtualization overhead compared to pure software emulation — this is why VM performance improved dramatically after ~2006.
+
+**Q5: Why is VM-based isolation important for cloud computing providers?**
+**A:** It lets providers like AWS safely rent out portions of one physical server to multiple different customers simultaneously, since each VM is isolated from others — a crash or security issue in one customer's VM cannot affect another's.
